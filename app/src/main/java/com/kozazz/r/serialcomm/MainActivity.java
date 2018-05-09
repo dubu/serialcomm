@@ -7,6 +7,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.hardware.usb.UsbDeviceConnection;
 import android.hardware.usb.UsbManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v7.app.AppCompatActivity;
@@ -163,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //            int numBytesWrite = port.write(buffer, 200);
 //            Log.d(TAG, "Read " + numBytesWrite + " bytes.");
 
-            for (int i = 0; i < 10; i++) {
+            for (int i = 0; i < 3; i++) {
 
                 byte buffer[] = new byte[] {(byte) '1'};
                 int numBytesWrite = port.write(buffer, 200);
@@ -172,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 buffer = new byte[] {(byte) '0'};
                 numBytesWrite = port.write(buffer, 200);
+//                Thread.sleep(2000L);
                 Thread.sleep(2000L);
 
             }
@@ -232,23 +234,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             accels = null;
         }
 
-        try {
-            if(sPort != null){
+        if(sPort != null){
 
-                byte buffer[] = new byte[] {(byte) pitch};
-                int numBytesWrite = sPort.write(buffer, 200);
-                Log.d(TAG, "Write" + numBytesWrite + " bytes.");
-            }
-        } catch (IOException x) {
-
+//                byte buffer[] = new byte[] {(byte) pitch};
+//                int numBytesWrite = sPort.write(buffer, 200);
+//                Log.d(TAG, "Write" + numBytesWrite + " bytes.");
+            new SendDataTask().execute(new Float(pitch));
         }
 
 
-//        Log.e("pitch", String.format("%s %s %s ", azimuth , pitch , roll));
+        Log.e("pitch", String.format("%s %s %s ", azimuth , pitch , roll));
 //            Log.e("pitch", String.format("%s %s %s ", values[0], values[1], values[2]));
-
-
-
 
 
     }
@@ -256,5 +252,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
+    }
+
+    private class SendDataTask extends AsyncTask<Float, Integer, Integer> {
+        protected Integer doInBackground(Float... data) {
+
+            Float f = data[0];
+            byte buffer[] = new byte[]{f.byteValue()};
+            int numBytesWrite = 0;
+            try {
+                numBytesWrite = sPort.write(buffer, 200);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Log.d(TAG, "Write" + numBytesWrite + " bytes.");
+
+            return numBytesWrite;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+//            setProgressPercent(progress[0]);
+        }
+
+        protected void onPostExecute(Long result) {
+//            showDialog("Downloaded " + result + " bytes");
+        }
     }
 }
