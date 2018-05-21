@@ -239,12 +239,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //                byte buffer[] = new byte[] {(byte) pitch};
 //                int numBytesWrite = sPort.write(buffer, 200);
 //                Log.d(TAG, "Write" + numBytesWrite + " bytes.");
-            new SendDataTask().execute(new Float(pitch));
+
+//            new SendDataTask().execute(new Float(pitch));
+            new SendDataTask().execute(new Float(values[1]));
         }
 
 
-        Log.e("pitch", String.format("%s %s %s ", azimuth , pitch , roll));
-//            Log.e("pitch", String.format("%s %s %s ", values[0], values[1], values[2]));
+//        Log.e("pitch", String.format("%s %s %s ", azimuth , pitch , roll));
+            Log.e("pitch", String.format("%s %s %s ", values[0], values[1], values[2]));
 
 
     }
