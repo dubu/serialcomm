@@ -14,18 +14,25 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+import android.widget.TextView;
 
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.hoho.android.usbserial.util.HexDump;
+import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private static final String TAG = "dubu";
+    private TextView mRsTitle;
 
     private Sensor mAccelerometer;
     private Sensor mMagneticField;
@@ -50,6 +57,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float roll;
 
     private static UsbSerialPort sPort = null;
+    private SerialInputOutputManager mSerialIoManager;
+    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+
+    private final SerialInputOutputManager.Listener mListener =
+            new SerialInputOutputManager.Listener() {
+
+                @Override
+                public void onRunError(Exception e) {
+                    Log.d(TAG, "Runner stopped.");
+                }
+
+                @Override
+                public void onNewData(final byte[] data) {
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            MainActivity.this.updateReceivedData(data);
+                        }
+                    });
+                }
+            };
 
     @Override
     protected void onResume() {
@@ -114,6 +142,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mRsTitle= (TextView) findViewById(R.id.rstitle);
+//        mRsTitle.setText("hi dubu");
+
 
 
         // Get an instance of the SensorManager
@@ -225,6 +257,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             float[] outGravity = new float[9];
 //                SensorManager.remapCoordinateSystem(gravity, SensorManager.AXIS_X,SensorManager.AXIS_Z, outGravity);
             SensorManager.remapCoordinateSystem(gravity, SensorManager.AXIS_Y,SensorManager.AXIS_X, outGravity);
+//            SensorManager.remapCoordinateSystem(gravity, SensorManager.AXIS_X,SensorManager.AXIS_Y, outGravity);
             SensorManager.getOrientation(outGravity, values);
 
             azimuth = values[0] * 57.2957795f;
@@ -246,7 +279,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 //        Log.e("pitch", String.format("%s %s %s ", azimuth , pitch , roll));
-            Log.e("pitch", String.format("%s %s %s ", values[0], values[1], values[2]));
+//            Log.e("pitch", String.format("%s %s %s ", values[0], values[1], values[2]));
+        Log.e("pitch", String.format("%s",  new Float(values[1])));
 
 
     }
@@ -254,6 +288,34 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
 
+    }
+
+    private void stopIoManager() {
+        if (mSerialIoManager != null) {
+            Log.i(TAG, "Stopping io manager ..");
+            mSerialIoManager.stop();
+            mSerialIoManager = null;
+        }
+    }
+
+    private void startIoManager() {
+        if (sPort != null) {
+            Log.i(TAG, "Starting io manager ..");
+            mSerialIoManager = new SerialInputOutputManager(sPort, mListener);
+            mExecutor.submit(mSerialIoManager);
+        }
+    }
+
+    private void onDeviceStateChange() {
+        stopIoManager();
+        startIoManager();
+    }
+    private void updateReceivedData(byte[] data) {
+        final String message = "Read " + data.length + " bytes: \n"
+                + HexDump.dumpHexString(data) + "\n\n";
+        mRsTitle.setText(message);
+//        mDumpTextView.append(message);
+//        mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
     }
 
     private class SendDataTask extends AsyncTask<Float, Integer, Integer> {
@@ -264,6 +326,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             int numBytesWrite = 0;
             try {
                 numBytesWrite = sPort.write(buffer, 200);
+//                byte end[] = new byte[] {(byte) 'x'};
+//                sPort.write(end,10);
             } catch (IOException e) {
                 e.printStackTrace();
             }
