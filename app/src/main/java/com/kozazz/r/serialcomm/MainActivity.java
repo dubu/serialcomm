@@ -14,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
@@ -32,7 +33,8 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     private static final String TAG = "dubu";
-    private TextView mRsTitle;
+    private TextView mDumpTextView;
+    private ScrollView mScrollView;
 
     private Sensor mAccelerometer;
     private Sensor mMagneticField;
@@ -82,10 +84,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onResume() {
         super.onResume();
+
+//        onDeviceStateChange();
+
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
         mSensorManager.registerListener(this, mMagneticField, SensorManager.SENSOR_DELAY_GAME);
-
-
 
         // Find all available drivers from attached devices.
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
@@ -143,8 +146,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mRsTitle= (TextView) findViewById(R.id.rstitle);
-//        mRsTitle.setText("hi dubu");
+        mDumpTextView= (TextView) findViewById(R.id.rstitle);
+        mScrollView = (ScrollView) findViewById(R.id.demoScroller);
+        mDumpTextView.setText("hi dubu \n asdfaf \n asdfaf\naaa \n asdfsfd");
 
 
 
@@ -274,13 +278,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //                Log.d(TAG, "Write" + numBytesWrite + " bytes.");
 
 //            new SendDataTask().execute(new Float(pitch));
-            new SendDataTask().execute(new Float(values[1]));
+            new SendDataTask().execute(String.valueOf(values[1]));
+        }else{
+            new MockDataTask().execute(String.valueOf(values[1]));
+
         }
 
 
 //        Log.e("pitch", String.format("%s %s %s ", azimuth , pitch , roll));
 //            Log.e("pitch", String.format("%s %s %s ", values[0], values[1], values[2]));
-        Log.e("pitch", String.format("%s",  new Float(values[1])));
+//        Log.e("pitch", String.format("%s",  new Float(values[1])));
 
 
     }
@@ -311,28 +318,54 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         startIoManager();
     }
     private void updateReceivedData(byte[] data) {
-        final String message = "Read " + data.length + " bytes: \n"
+        final String message = "Readd " + data.length + " bytes: \n"
                 + HexDump.dumpHexString(data) + "\n\n";
-        mRsTitle.setText(message);
-//        mDumpTextView.append(message);
-//        mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
+//        LocalDateTime now = LocalDateTime.now();
+//        mDumpTextView.setText(String.valueOf(now.getSecond()));
+//        mRsTitle.setText("resv");
+        mDumpTextView.append(message);
+        mScrollView.smoothScrollTo(0, mDumpTextView.getBottom());
     }
 
-    private class SendDataTask extends AsyncTask<Float, Integer, Integer> {
-        protected Integer doInBackground(Float... data) {
+    private class SendDataTask extends AsyncTask<String, Integer, Integer> {
+        protected Integer doInBackground(String... data) {
 
-            Float f = data[0];
-            byte buffer[] = new byte[]{f.byteValue()};
+            String str = data[0];
+                    Log.e("pitch", String.format("%s", str ));
+//            byte buffer[] = new byte[]{str.getBytes()};
             int numBytesWrite = 0;
             try {
-                numBytesWrite = sPort.write(buffer, 200);
-//                byte end[] = new byte[] {(byte) 'x'};
-//                sPort.write(end,10);
+//                numBytesWrite = sPort.write("-1.23456789".getBytes(), 200);
+//                numBytesWrite = sPort.write("-1.2345".getBytes(), 200);
+                numBytesWrite = sPort.write(str.getBytes(), 200);
+                byte end[] = new byte[] {(byte) '\n'};
+                sPort.write(end,10);
             } catch (IOException e) {
                 e.printStackTrace();
             }
             Log.d(TAG, "Write" + numBytesWrite + " bytes.");
 
+            return numBytesWrite;
+        }
+
+        protected void onProgressUpdate(Integer... progress) {
+//            setProgressPercent(progress[0]);
+        }
+
+        protected void onPostExecute(Long result) {
+//            showDialog("Downloaded " + result + " bytes");
+        }
+    }
+
+
+    private class MockDataTask extends AsyncTask<String, Integer, Integer> {
+        protected Integer doInBackground(String... data) {
+
+            String str = data[0];
+            Log.e("pitch", String.format("%s", str ));
+//            byte buffer[] = new byte[]{f.byteValue()};
+            int numBytesWrite = 0;
+            Log.d(TAG, "Write" + numBytesWrite + " bytes.");
             return numBytesWrite;
         }
 
