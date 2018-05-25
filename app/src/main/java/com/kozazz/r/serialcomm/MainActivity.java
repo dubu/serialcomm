@@ -332,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private class SendDataTask extends AsyncTask<String, Integer, Integer> {
         protected Integer doInBackground(String... data) {
 
-            String str = data[0];
+            String str = data[0]+"\n";
                     Log.e("pitch", String.format("%s", str ));
 //            byte buffer[] = new byte[]{str.getBytes()};
             int numBytesWrite = 0;
@@ -340,8 +340,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //                numBytesWrite = sPort.write("-1.23456789".getBytes(), 200);
 //                numBytesWrite = sPort.write("-1.2345".getBytes(), 200);
                 numBytesWrite = sPort.write(str.getBytes(), 200);
-                byte end[] = new byte[] {(byte) '\n'};
-                sPort.write(end,10);
             } catch (IOException e) {
                 e.printStackTrace();
             }
