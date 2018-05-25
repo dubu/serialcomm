@@ -259,9 +259,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             magnetic = new float[9];
             SensorManager.getRotationMatrix(gravity, null, accels, mags);
             float[] outGravity = new float[9];
-//                SensorManager.remapCoordinateSystem(gravity, SensorManager.AXIS_X,SensorManager.AXIS_Z, outGravity);
-            SensorManager.remapCoordinateSystem(gravity, SensorManager.AXIS_Y,SensorManager.AXIS_X, outGravity);
-//            SensorManager.remapCoordinateSystem(gravity, SensorManager.AXIS_X,SensorManager.AXIS_Y, outGravity);
+            /// 기본
+//            SensorManager.remapCoordinateSystem(gravity, SensorManager.AXIS_Y,SensorManager.AXIS_X, outGravity);
+
+//           SensorManager.remapCoordinateSystem(gravity, SensorManager.AXIS_X,SensorManager.AXIS_Y, outGravity);
+          SensorManager.remapCoordinateSystem(gravity, SensorManager.AXIS_X,SensorManager.AXIS_Z, outGravity);
             SensorManager.getOrientation(outGravity, values);
 
             azimuth = values[0] * 57.2957795f;
@@ -285,7 +287,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
 
-//        Log.e("pitch", String.format("%s %s %s ", azimuth , pitch , roll));
+        Log.e("pitch aa", String.format("%s %s %s ", azimuth , pitch , roll));
 //            Log.e("pitch", String.format("%s %s %s ", values[0], values[1], values[2]));
 //        Log.e("pitch", String.format("%s",  new Float(values[1])));
 
@@ -362,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         protected Integer doInBackground(String... data) {
 
             String str = data[0];
-            Log.e("pitch", String.format("%s", str ));
+//            Log.e("mock pitch", String.format("%s", str ));
 //            byte buffer[] = new byte[]{f.byteValue()};
             int numBytesWrite = 0;
             Log.d(TAG, "Write" + numBytesWrite + " bytes.");
