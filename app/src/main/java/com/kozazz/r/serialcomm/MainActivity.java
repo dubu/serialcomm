@@ -87,8 +87,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 //        onDeviceStateChange();
 
-        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
-        mSensorManager.registerListener(this, mMagneticField, SensorManager.SENSOR_DELAY_GAME);
+        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_FASTEST);
+        mSensorManager.registerListener(this, mMagneticField, SensorManager.SENSOR_DELAY_FASTEST);
 
         // Find all available drivers from attached devices.
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
@@ -200,25 +200,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //            int numBytesWrite = port.write(buffer, 200);
 //            Log.d(TAG, "Read " + numBytesWrite + " bytes.");
 
-            for (int i = 0; i < 3; i++) {
-
-                byte buffer[] = new byte[] {(byte) '1'};
-                int numBytesWrite = port.write(buffer, 200);
-                Log.d(TAG, "Write" + numBytesWrite + " bytes.");
-
-
-                buffer = new byte[] {(byte) '0'};
-                numBytesWrite = port.write(buffer, 200);
-//                Thread.sleep(2000L);
-                Thread.sleep(2000L);
-
-            }
 
 
         } catch (IOException e) {
             // Deal with error.
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         } finally {
             //                port.close();
         }
@@ -333,17 +318,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         protected Integer doInBackground(String... data) {
 
             String str = data[0]+"\n";
-                    Log.e("pitch", String.format("%s", str ));
+//                    Log.e("pitch", String.format("%s", str ));
 //            byte buffer[] = new byte[]{str.getBytes()};
             int numBytesWrite = 0;
             try {
 //                numBytesWrite = sPort.write("-1.23456789".getBytes(), 200);
 //                numBytesWrite = sPort.write("-1.2345".getBytes(), 200);
-                numBytesWrite = sPort.write(str.getBytes(), 200);
+                numBytesWrite = sPort.write(str.getBytes(), 20);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            Log.d(TAG, "Write" + numBytesWrite + " bytes.");
+//            Log.d(TAG, "Write" + numBytesWrite + " bytes.");
 
             return numBytesWrite;
         }
@@ -365,7 +350,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //            Log.e("mock pitch", String.format("%s", str ));
 //            byte buffer[] = new byte[]{f.byteValue()};
             int numBytesWrite = 0;
-            Log.d(TAG, "Write" + numBytesWrite + " bytes.");
+//            Log.d(TAG, "Write" + numBytesWrite + " bytes.");
             return numBytesWrite;
         }
 
